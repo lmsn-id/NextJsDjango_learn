@@ -3,10 +3,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { HiMenuAlt3 } from "react-icons/hi";
 import { MdOutlineDashboard } from "react-icons/md";
-import { RiSettings4Line } from "react-icons/ri";
-import { TbReportAnalytics } from "react-icons/tb";
-import { AiOutlineUser, AiOutlineHeart } from "react-icons/ai";
-import { FiMessageSquare, FiFolder, FiShoppingCart } from "react-icons/fi";
+import { PiStudent } from "react-icons/pi";
+import { TbReportAnalytics, TbBook } from "react-icons/tb";
+import { BsClipboard2DataFill } from "react-icons/bs";
+import { FiFolder, FiCalendar } from "react-icons/fi";
 import { FaUserTie } from "react-icons/fa6";
 import { IoIosArrowForward } from "react-icons/io";
 import Link from "next/link";
@@ -22,13 +22,26 @@ export default function SidebarAkademik({
   const baseurl = () => "/akademik";
   const menus = [
     { name: "Dashboard", link: `${baseurl()}/`, icon: MdOutlineDashboard },
-    { name: "User", link: "/", icon: AiOutlineUser },
-    { name: "Messages", link: "/", icon: FiMessageSquare },
+    {
+      name: "Master Data",
+      link: "#",
+      icon: BsClipboard2DataFill,
+      submenu: [
+        {
+          name: "Data Siswa",
+          link: `${baseurl()}/data-siswa`,
+          icon: PiStudent,
+        },
+        { name: "Materi", link: `${baseurl()}/materi`, icon: TbBook },
+        {
+          name: "Jadwal Mengajar",
+          link: `${baseurl()}/jadwal`,
+          icon: FiCalendar,
+        },
+      ],
+    },
     { name: "Analytics", link: "/", icon: TbReportAnalytics, margin: true },
     { name: "File Manager", link: "/", icon: FiFolder },
-    { name: "Cart", link: "/", icon: FiShoppingCart },
-    { name: "Saved", link: "/", icon: AiOutlineHeart, margin: true },
-    { name: "Setting", link: "/", icon: RiSettings4Line },
   ];
 
   const { FormAkademik } = useGetUserAkademik();
@@ -38,6 +51,7 @@ export default function SidebarAkademik({
   const [dropdownOpen2, setDropdownOpen2] = useState(false);
   const dropdownRef2 = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [masterDataOpen, setMasterDataOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -85,10 +99,14 @@ export default function SidebarAkademik({
   const handleDropdownClick2 = () => {
     if (!open) {
       setOpen(true);
-      setTimeout(() => setDropdownOpen2(true), 300); 
+      setTimeout(() => setDropdownOpen2(true), 300);
     } else {
       setDropdownOpen2(!dropdownOpen2);
     }
+  };
+
+  const handleMasterDataClick = () => {
+    setMasterDataOpen(!masterDataOpen);
   };
 
   return (
@@ -125,37 +143,78 @@ export default function SidebarAkademik({
             </div>
 
             <div className="mt-4 flex flex-col gap-4 relative">
-              {menus?.map((menu, i) => (
-                <Link
-                  href={menu.link}
-                  key={i}
-                  className={`${
-                    menu.margin && "mt-5"
-                  } group flex items-center text-sm gap-3.5 font-medium p-2 rounded-md ${
-                    isActive(menu.link)
-                      ? "bg-gray-300 text-gray-900"
-                      : "hover:bg-gray-300"
-                  }`}
-                >
-                  <div>{React.createElement(menu?.icon, { size: "20" })}</div>
-                  <h2
-                    style={{
-                      transitionDelay: `${i + 3}00ms`,
-                    }}
-                    className={`whitespace-pre duration-500 ${
-                      !open && "opacity-0 translate-x-28 overflow-hidden"
-                    }`}
+              {menus.map((menu, i) => (
+                <div key={i} className="relative group">
+                  <div
+                    className={`group flex items-center text-sm gap-3.5 font-medium p-2 rounded-md ${
+                      isActive(menu.link)
+                        ? "bg-gray-300 text-gray-900"
+                        : "hover:bg-gray-300"
+                    } cursor-pointer`}
+                    onClick={menu.submenu ? handleMasterDataClick : undefined}
                   >
-                    {menu?.name}
-                  </h2>
-                  <h2
-                    className={`${
-                      open && "hidden"
-                    } absolute left-48 bg-white font-semibold whitespace-pre text-gray-900 rounded-md drop-shadow-lg px-0 py-0 w-0 overflow-hidden group-hover:px-2 group-hover:py-1 group-hover:left-14 group-hover:duration-300 group-hover:w-fit`}
-                  >
-                    {menu?.name}
-                  </h2>
-                </Link>
+                    <div>{React.createElement(menu.icon, { size: "20" })}</div>
+                    <h2
+                      style={{ transitionDelay: `${i + 3}00ms` }}
+                      className={`whitespace-pre duration-500 ${
+                        !open && "opacity-0 translate-x-28 overflow-hidden"
+                      }`}
+                    >
+                      {menu.name}
+                    </h2>
+                    {menu.submenu && (
+                      <IoIosArrowForward
+                        className={`ml-auto ${
+                          masterDataOpen
+                            ? "rotate-90 duration-200"
+                            : "rotate-0 duration-200"
+                        }`}
+                        size={18}
+                      />
+                    )}
+                  </div>
+                  {!open && (
+                    <h2
+                      className={`${
+                        open && "hidden"
+                      } absolute left-48 bg-white font-semibold whitespace-pre text-gray-900 rounded-md drop-shadow-lg px-0 py-0 w-0 overflow-hidden group-hover:px-2 group-hover:py-1 group-hover:left-14 group-hover:duration-300 group-hover:w-fit`}
+                    >
+                      {menu.name}
+                    </h2>
+                  )}
+
+                  {menu.submenu && masterDataOpen && (
+                    <div
+                      className={`ml-${
+                        open ? "8" : "2"
+                      } mt-2 flex flex-col gap-2 ${open ? "" : "items-center"}`}
+                    >
+                      {menu.submenu.map((submenu, j) => (
+                        <div key={j} className="relative group">
+                          <Link
+                            href={submenu.link}
+                            className={`text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-200 px-2 py-1 rounded-md ${
+                              open
+                                ? "flex items-center gap-3"
+                                : "flex justify-center"
+                            }`}
+                          >
+                            {submenu.icon &&
+                              React.createElement(submenu.icon, { size: "20" })}
+                            {open && submenu.name}
+                          </Link>
+                          {!open && (
+                            <h2
+                              className={`absolute left-48 bg-white font-semibold whitespace-pre text-gray-900 rounded-md drop-shadow-lg px-0 py-0 w-0 overflow-hidden group-hover:px-2 group-hover:py-1 group-hover:left-14 group-hover:duration-300 group-hover:w-fit`}
+                            >
+                              {submenu.name}
+                            </h2>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </section>
@@ -288,7 +347,7 @@ export default function SidebarAkademik({
           </ul>
         </nav>
 
-        <div className="m-3 mx-12 text-xl">{children}</div>
+        <div className="m-3 mx-8 md:mx-12 text-xl">{children}</div>
       </div>
 
       {open && isMobile && (

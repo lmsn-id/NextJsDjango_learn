@@ -12,7 +12,10 @@ type SekolahFormData = {
   Nuptk: number;
   Nama: string;
   Kelas?: string;
-  Materi: string[];
+  Materi: {
+    value: string;
+    kelasMateri: string[];
+  }[];
   Posisi: string;
 };
 
@@ -42,10 +45,25 @@ async function getDataSekolah(id: string) {
 }
 
 async function updateDataSekolah(id: string, data: SekolahFormData) {
+  console.log("Data input:", data); // Log data input
+
   const session = await getSession();
   if (!session || !session.accessToken) {
     throw new Error("Unauthorized");
   }
+
+  // Transform data for Materi
+  const transformedData = {
+    ...data,
+    Materi: data.Materi.map((m) => ({
+      value: m.value,
+      kelasMateri: Array.isArray(m.kelasMateri)
+        ? m.kelasMateri.join(",") // Ensure kelasMateri is a comma-separated string
+        : m.kelasMateri,
+    })),
+  };
+
+  console.log("Data to be sent to API:", transformedData); // Log transformed data
 
   const url = `${process.env.NEXT_PUBLIC_API_URL}/UpdateDataAkademik/${id}`;
   const response = await fetch(url, {
@@ -54,11 +72,12 @@ async function updateDataSekolah(id: string, data: SekolahFormData) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${session.accessToken}`,
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(transformedData),
   });
 
   if (!response.ok) {
     const errorData = await response.json();
+    console.error("API error response:", errorData); // Log error response from API
     throw new Error(errorData.message || "Failed to update data");
   }
 
@@ -190,50 +209,71 @@ export default function UpdateAkademik() {
             <>
               <div className="mb-4">
                 <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
                   htmlFor="Kelas"
+                  className="block text-gray-700 text-sm font-bold mb-2"
                 >
                   Kelas
                 </label>
                 <input
-                  type="text"
-                  {...register("Kelas")}
-                  placeholder="Masukkan Kelas"
+                  className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline"
                   id="Kelas"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  type="text"
+                  placeholder="Masukan Kelas"
+                  {...register("Kelas")}
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Materi
-                </label>
-                {fields.map((field, index) => (
-                  <div key={field.id} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      {...register(`Materi.${index}` as const, {
-                        required: true,
-                      })}
-                      placeholder={`Materi ${index + 1}`}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
+              {fields.map((item, index) => (
+                <div key={item.id} className="mb-4">
+                  <div className="flex items-end space-x-4 w-full">
+                    <div className="w-full">
+                      <label
+                        htmlFor={`Materi-${index}`}
+                        className="block text-gray-700 text-sm font-bold mb-2"
+                      >
+                        Materi {index + 1}
+                      </label>
+                      <input
+                        className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline"
+                        id={`Materi-${index}`}
+                        type="text"
+                        placeholder={`Masukan Materi ${index + 1}`}
+                        {...register(`Materi.${index}.value`, {
+                          required: "Materi wajib diisi",
+                        })}
+                      />
+                    </div>
+                    <div className="w-full">
+                      <label
+                        htmlFor={`Materi-${index}-kelasMateri`}
+                        className="block text-gray-700 text-sm font-bold mb-2 mt-2"
+                      >
+                        Kelas Materi
+                      </label>
+                      <input
+                        className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline"
+                        id={`Materi-${index}-kelasMateri`}
+                        type="text"
+                        placeholder="Masukkan kelas terkait (pisahkan dengan koma)"
+                        {...register(`Materi.${index}.kelasMateri`)}
+                      />
+                    </div>
                     <button
                       type="button"
+                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                       onClick={() => remove(index)}
-                      className="bg-red-500 text-white px-3 py-1 rounded"
                     >
                       Hapus
                     </button>
                   </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => append("")}
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  Tambah Materi
-                </button>
-              </div>
+                </div>
+              ))}
+              <button
+                type="button"
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                onClick={() => append({ value: "", kelasMateri: [] })}
+              >
+                Tambah Materi
+              </button>
             </>
           )}
 

@@ -34,7 +34,7 @@ class Akademik(models.Model):
     NoTelepon = models.CharField(max_length=18, null=True, blank=True)
     Posisi = models.CharField(max_length=20)
     Kelas = models.CharField(max_length=20)
-    Materi = models.JSONField()
+    Materi = models.JSONField(default=list, blank=True, null=True)
     Tanggal_Masuk = models.DateField(auto_now_add=True)
 
     def save(self, *args, **kwargs):

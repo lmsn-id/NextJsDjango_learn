@@ -10,7 +10,7 @@ interface FormValues {
   Nama: string;
   Posisi: string;
   Kelas: string;
-  Materi: { id: string; value: string }[];
+  Materi: { id: string; value: string; kelasMateri: string[] }[];
 }
 
 interface FormData {
@@ -101,8 +101,7 @@ export const AddDataAkademik = () => {
       Nip: "",
       Nama: "",
       Posisi: "",
-      Kelas: "",
-      Materi: [{ id: Date.now().toString(), value: "" }],
+      Materi: [{ id: Date.now().toString(), value: "", kelasMateri: [] }],
     },
   });
 
@@ -114,6 +113,8 @@ export const AddDataAkademik = () => {
   const posisi = watch("Posisi");
 
   const onSubmit = async (data: FormValues) => {
+    console.log("Data Input", data);
+
     if (!data.Nuptk && !data.Nip) {
       toast.info("NUPTK atau NIP tidak boleh kosong");
       return;
@@ -124,18 +125,22 @@ export const AddDataAkademik = () => {
       return;
     }
 
-    if (data.Posisi === "Guru" && data.Materi.some((materi) => !materi.value)) {
-      toast.info("Materi wajib diisi!");
+    if (
+      data.Posisi === "Guru" &&
+      data.Materi.some((materi) => !materi.value || !materi.kelasMateri.length)
+    ) {
+      toast.info("Materi dan kelas wajib diisi!");
       return;
     }
 
     try {
-      const transformedMateri = data.Materi.map((materi) => materi.value);
+      const transformedMateri = data.Materi.map(({ ...rest }) => rest);
 
       const transformedData = {
         ...data,
         Materi: transformedMateri,
       };
+
       const url = `${process.env.NEXT_PUBLIC_API_URL}/AddDataAkademik/`;
 
       const session = await getSession();
@@ -155,13 +160,13 @@ export const AddDataAkademik = () => {
       const result = await response.json();
 
       if (response.ok) {
-        toast.success(result.message || "Akun Sekolah Berhasil Ditambahkan", {
+        toast.success(result.message || "Data berhasil ditambahkan", {
           onClose: () => {
             router.push(result.redirect);
           },
         });
       } else {
-        toast.error(result.message || "Akun Sekolah Gagal Ditambahkan");
+        toast.error(result.message || "Gagal menambahkan data");
       }
     } catch (error) {
       console.error(error);
@@ -221,7 +226,7 @@ export const AddChatChatbot = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.accessToken}`,
         },
-        body: JSON.stringify(payload), // Pastikan payload adalah JSON
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();

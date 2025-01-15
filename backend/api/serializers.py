@@ -33,36 +33,48 @@ class GetAllDataSiswaSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 
-
 class AkademikSerializer(serializers.ModelSerializer):
     class Meta:
         model = Akademik
-        fields = ['id','Nip', 'Nuptk', 'Nama', 'Posisi', 'Kelas', 'Materi']
+        fields = ['id', 'Nip', 'Nuptk', 'Nama', 'Posisi', 'Kelas', 'Materi']
         extra_kwargs = {
             'id': {'read_only': True},
-            'Nip': {'required': False, 'allow_blank': True},  
-            'Nuptk': {'required': False, 'allow_blank': True},  
-            'Nama': {'required': True},  
-            'Posisi': {'required': True},  
-            'Kelas': {'required': False, 'allow_blank': True},  
-            'Materi': {'required': False, 'allow_null': True},  
+            'Nip': {'required': False, 'allow_blank': True},
+            'Nuptk': {'required': False, 'allow_blank': True},
+            'Nama': {'required': True},
+            'Posisi': {'required': True},
+            'Kelas': {'required': False, 'allow_blank': True},
+            'Materi': {'required': False, 'allow_null': True},
         }
+
     def validate(self, data):
         nip = data.get('Nip')
         nuptk = data.get('Nuptk')
         posisi = data.get('Posisi')
         materi = data.get('Materi')
+
+        # Validasi NIP atau NUPTK
         if not nip and not nuptk:
             raise serializers.ValidationError("Salah satu dari Nip atau Nuptk harus diisi.")
+
+        # Validasi posisi "Guru"
         if posisi == "Guru":
             if not materi or not isinstance(materi, list):
-                raise serializers.ValidationError("Materi harus Wajib di isi.")
-        if posisi != "Guru":
-             data['Materi'] = []
-             data['Kelas'] = ""
-        
-        
+                raise serializers.ValidationError("Materi harus berupa daftar objek dengan value dan kelasMateri.")
+            for item in materi:
+                if not isinstance(item, dict) or 'value' not in item or 'kelasMateri' not in item:
+                    raise serializers.ValidationError(
+                        "Setiap item Materi harus memiliki key 'value' dan 'kelasMateri'."
+                    )
+                if not isinstance(item['kelasMateri'], list):
+                    raise serializers.ValidationError("kelasMateri harus berupa daftar.")
+        else:
+            data['Materi'] = []
+            data['Kelas'] = ""
+
         return data
+
+
 
 class GetAllAkademikSerializer(serializers.ModelSerializer):
     class Meta:

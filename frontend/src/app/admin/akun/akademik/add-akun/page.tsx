@@ -116,28 +116,48 @@ export default function AddAkunAkademik() {
               </div>
               {fields.map((item, index) => (
                 <div key={item.id} className="mb-4">
-                  <label
-                    htmlFor={`Materi-${index}`}
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                  >
-                    Materi {index + 1}
-                  </label>
-                  <div className="flex items-center space-x-4">
-                    <input
-                      className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline"
-                      id={`Materi-${index}`}
-                      type="text"
-                      placeholder={`Masukan Materi ${index + 1}`}
-                      {...register(`Materi.${index}.value`, {
-                        required: "Materi wajib diisi",
-                      })}
-                    />
-
+                  <div className="flex items-end space-x-4 w-full">
+                    <div className="w-full">
+                      <label
+                        htmlFor={`Materi-${index}`}
+                        className="block text-gray-700 text-sm font-bold mb-2"
+                      >
+                        Materi {index + 1}
+                      </label>
+                      <input
+                        className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline"
+                        id={`Materi-${index}`}
+                        type="text"
+                        placeholder={`Masukan Materi ${index + 1}`}
+                        {...register(`Materi.${index}.value`, {
+                          required: "Materi wajib diisi",
+                        })}
+                      />
+                    </div>
+                    <div className="w-full">
+                      <label
+                        htmlFor={`Materi-${index}-kelasMateri`}
+                        className="block text-gray-700 text-sm font-bold mb-2 mt-2"
+                      >
+                        Kelas Materi
+                      </label>
+                      <input
+                        className="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline"
+                        id={`Materi-${index}-kelasMateri`}
+                        type="text"
+                        placeholder="Masukkan kelas terkait (pisahkan dengan koma)"
+                        {...register(`Materi.${index}.kelasMateri`)}
+                      />
+                    </div>
                     <button
                       type="button"
                       className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded flex-shrink-0"
                       onClick={() =>
-                        append({ id: Date.now().toString(), value: "" })
+                        append({
+                          id: Date.now().toString(),
+                          value: "",
+                          kelasMateri: [],
+                        })
                       }
                     >
                       Add Materi

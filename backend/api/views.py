@@ -283,6 +283,7 @@ class UpdateSiswaView(APIView):
 
     def put(self, request, Nis):
         try:
+            nama = request.data.get('Nama')  
             siswa = DataSiswa.objects.filter(Nis=Nis).first()
             if not siswa:
                 return Response({
@@ -293,6 +294,12 @@ class UpdateSiswaView(APIView):
             serializer = DataSiswaSerializer(siswa, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
+
+                user = User.objects.filter(username=Nis).first()
+                if user:
+                    user.first_name = nama
+                    user.save()
+
                 return Response({
                     'message': 'Data siswa berhasil diperbarui',
                     'redirect': '/admin/akun/siswa',
@@ -380,11 +387,37 @@ class AddDataAkademikView(APIView):
             kelas = request.data.get('Kelas', '')
             materi = request.data.get('Materi', [])
 
+            # Validasi dan transformasi Materi
+            if not isinstance(materi, list):
+                return Response({
+                    'error': 'Format Materi tidak valid. Harus berupa daftar objek.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            transformed_materi = []
+            for item in materi:
+                if not isinstance(item, dict):
+                    return Response({
+                        'error': 'Setiap elemen Materi harus berupa objek dengan key "value" dan "kelasMateri".'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+                value = item.get('value')
+                kelas_materi = item.get('kelasMateri')
+                if not value or not kelas_materi:
+                    return Response({
+                        'error': 'Setiap Materi harus memiliki key "value" dan "kelasMateri".'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+                if isinstance(kelas_materi, str):
+                    kelas_materi = [k.strip() for k in kelas_materi.split(',')]
+
+                transformed_materi.append({
+                    'value': value,
+                    'kelasMateri': kelas_materi
+                })
+
+
             username = nip if nip else nuptk
 
-            if not isinstance(materi, list):
-                materi = [materi] 
-            
             if not nip:
                 return Response({
                     'error': 'NIP Wajib diisi',
@@ -397,7 +430,7 @@ class AddDataAkademikView(APIView):
                     'message': 'NIP atau NUPTK sudah terdaftar sebagai username',
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            default_password = make_password(username)  
+            default_password = make_password(username)
             user_serializer = AkunSerializer(data={
                 'username': username,
                 'password': default_password,
@@ -415,9 +448,8 @@ class AddDataAkademikView(APIView):
                 'Nama': nama,
                 'Posisi': posisi,
                 'Kelas': kelas if posisi == "Guru" else "",
-                'Materi': materi if posisi == "Guru" else [],
+                'Materi': transformed_materi if posisi == "Guru" else [],
             })
-
 
             if sekolah_serializer.is_valid():
                 sekolah_serializer.save()
@@ -429,9 +461,10 @@ class AddDataAkademikView(APIView):
                 return Response(sekolah_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            traceback.print_exc() 
+            traceback.print_exc()
             print("Exception error:", e)
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         
 class GetAllDataAkademikView(APIView):
     def get(self, request):
@@ -491,49 +524,78 @@ class UpdateDataAkademikView(APIView):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            traceback.print_exc() 
-            print("Exception error:", e)
+            traceback.print_exc()
             return Response({
                 'error': 'server_error',
                 'message': 'Terjadi kesalahan saat mendapatkan data sekolah',
                 'details': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
     def put(self, request, id):
-        print("Received data:", request.data)
         try:
-            materi = request.data.get('Materi', [])
-        
+            data = request.data
+
+            materi = data.get('Materi', [])
+            nama = data.get('Nama')
+
             if not isinstance(materi, list):
-                materi = [materi] 
-            
+                return Response({
+                    'error': 'invalid_data',
+                    'message': 'Materi harus berupa array'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            for m in materi:
+                if 'value' not in m or 'kelasMateri' not in m:
+                    return Response({
+                        'error': 'invalid_data',
+                        'message': 'Setiap materi harus memiliki value dan kelasMateri'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                
+                if isinstance(m['kelasMateri'], str):
+                    m['kelasMateri'] = m['kelasMateri'].split(',')
+
             sekolah = Akademik.objects.filter(id=id).first()
             if not sekolah:
                 return Response({
                     'error': 'not_found',
-                    'message': 'Data sekolah tidak ditemukan'
+                    'message': 'Data Akademink tidak ditemukan'
                 }, status=status.HTTP_404_NOT_FOUND)
 
-            serializer = AkademikSerializer(sekolah, data=request.data)
+            transformed_materi = [
+                {
+                    "value": m.get("value"),
+                    "kelasMateri": m.get("kelasMateri", [])
+                }
+                for m in materi
+            ]
+            data["Materi"] = transformed_materi
+
+            serializer = AkademikSerializer(sekolah, data=data)
             if serializer.is_valid():
                 serializer.save()
+
+                username = sekolah.Nip if sekolah.Nip else sekolah.Nuptk
+                user = User.objects.filter(username=username).first()
+                if user:
+                    user.first_name = nama
+                    user.save()
+
                 return Response({
-                    'message': 'Data sekolah berhasil diupdate',
+                    'message': 'Data Akademik berhasil diupdate',
                     'redirect': '/admin/akun/akademik',
                     'data': serializer.data
                 }, status=status.HTTP_200_OK)
             else:
-                print("Serializer errors:", serializer.errors)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            traceback.print_exc() 
-            print("Exception error:", e)
+            traceback.print_exc()
             return Response({
                 'error': 'server_error',
                 'message': 'Terjadi kesalahan saat memperbarui data sekolah',
                 'details': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 class DeleteDataAkademikView(APIView):

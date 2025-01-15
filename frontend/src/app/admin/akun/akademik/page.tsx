@@ -77,7 +77,7 @@ export default function AkademikPage() {
                   href={`${BaseUrl}/add-akun`}
                   className="p-2 border rounded-lg bg-[#3a3086] text-white"
                 >
-                  Add Struktur
+                  Add Akademik
                 </Link>
               </div>
             </div>
