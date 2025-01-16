@@ -360,57 +360,6 @@ export const useGetDataAkademik = () => {
   };
 };
 
-export const useGetUserAkademik = () => {
-  const [FormAkademik, setFormAkademik] = useState({
-    Nip: "",
-    Nuptk: "",
-    Nama: "",
-    Posisi: "",
-  });
-
-  const { data: session } = useSession();
-  const username = session?.user?.username;
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!username) return;
-
-      try {
-        const session = await getSession();
-
-        if (!session || !session.accessToken) {
-          throw new Error(
-            "User is not authenticated or session is missing accessToken"
-          );
-        }
-        const url = `${process.env.NEXT_PUBLIC_API_URL}/GetUserAkademik/${username}`;
-        const response = await fetch(url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          setFormAkademik(result.data);
-        } else {
-          toast.error("Error fetching data");
-        }
-      } catch {
-        toast.error("Error fetching data");
-      }
-    };
-
-    fetchData();
-  }, [username]);
-
-  return {
-    FormAkademik,
-  };
-};
-
 export const GetAllDataChatbot = () => {
   const [data, setData] = useState<DataChatbot[]>([]);
 

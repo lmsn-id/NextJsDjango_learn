@@ -45,25 +45,22 @@ async function getDataSekolah(id: string) {
 }
 
 async function updateDataSekolah(id: string, data: SekolahFormData) {
-  console.log("Data input:", data); // Log data input
-
   const session = await getSession();
   if (!session || !session.accessToken) {
     throw new Error("Unauthorized");
   }
 
-  // Transform data for Materi
   const transformedData = {
     ...data,
     Materi: data.Materi.map((m) => ({
       value: m.value,
       kelasMateri: Array.isArray(m.kelasMateri)
-        ? m.kelasMateri.join(",") // Ensure kelasMateri is a comma-separated string
+        ? m.kelasMateri.join(",")
         : m.kelasMateri,
     })),
   };
 
-  console.log("Data to be sent to API:", transformedData); // Log transformed data
+  console.log("Data to be sent to API:", transformedData);
 
   const url = `${process.env.NEXT_PUBLIC_API_URL}/UpdateDataAkademik/${id}`;
   const response = await fetch(url, {
@@ -77,7 +74,7 @@ async function updateDataSekolah(id: string, data: SekolahFormData) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    console.error("API error response:", errorData); // Log error response from API
+    console.error("API error response:", errorData);
     throw new Error(errorData.message || "Failed to update data");
   }
 

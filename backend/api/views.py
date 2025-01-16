@@ -376,7 +376,7 @@ class GetAllDataElearningView(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
-#===============================================Struktur Akademik===============================================
+#===============================================Akademik===============================================
 class AddDataAkademikView(APIView):
     def post(self, request):
         try:

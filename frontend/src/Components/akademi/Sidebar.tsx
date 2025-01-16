@@ -11,7 +11,7 @@ import { FaUserTie } from "react-icons/fa6";
 import { IoIosArrowForward } from "react-icons/io";
 import Link from "next/link";
 import Image from "next/image";
-import { useGetUserAkademik } from "@/hook/useGet";
+import { useGetUserAkademik } from "@/hook/Akademik";
 import LogoutButton from "../LogoutButton";
 
 export default function SidebarAkademik({
@@ -145,12 +145,13 @@ export default function SidebarAkademik({
             <div className="mt-4 flex flex-col gap-4 relative">
               {menus.map((menu, i) => (
                 <div key={i} className="relative group">
-                  <div
+                  <Link
                     className={`group flex items-center text-sm gap-3.5 font-medium p-2 rounded-md ${
                       isActive(menu.link)
                         ? "bg-gray-300 text-gray-900"
                         : "hover:bg-gray-300"
                     } cursor-pointer`}
+                    href={menu.link}
                     onClick={menu.submenu ? handleMasterDataClick : undefined}
                   >
                     <div>{React.createElement(menu.icon, { size: "20" })}</div>
@@ -172,7 +173,7 @@ export default function SidebarAkademik({
                         size={18}
                       />
                     )}
-                  </div>
+                  </Link>
                   {!open && (
                     <h2
                       className={`${

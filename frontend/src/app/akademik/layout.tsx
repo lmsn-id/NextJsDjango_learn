@@ -13,7 +13,6 @@ export default async function AkademikLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
-  console.log(session);
 
   const allowedPositions = ["Kepala Sekolah", "Guru", "Staff", "Tata Usaha"];
 

@@ -1,11 +1,21 @@
 "use client";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { GetDataSiswaAkademik } from "@/hook/Akademik";
 
 export default function DataSiswa() {
-  const [selectedClass, setSelectedClass] = useState("12 TKJ 1");
+  const { selectedClass, classOptions, selectedClassInfo, handleClassChange } =
+    GetDataSiswaAkademik();
 
-  const handleClassChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedClass(event.target.value);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const baseurl = () => {
+    const basePath = pathname?.split("/").slice(0, 3).join("/");
+    return basePath;
+  };
+
+  const PushAbsen = () => {
+    router.push(`${baseurl()}/${selectedClass}`);
   };
 
   return (
@@ -28,9 +38,13 @@ export default function DataSiswa() {
                   value={selectedClass}
                   onChange={handleClassChange}
                 >
-                  <option value="12 TKJ 1">12 TKJ 1</option>
-                  <option value="10 TKJ 1">10 TKJ 1</option>
-                  <option value="11 TKJ 2">11 TKJ 2</option>
+                  {classOptions.map((option) =>
+                    option.kelasMateri.map((kelas) => (
+                      <option key={kelas} value={kelas}>
+                        {kelas}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
               <div className="flex items-center justify-between">
@@ -50,9 +64,13 @@ export default function DataSiswa() {
                   value={selectedClass}
                   onChange={handleClassChange}
                 >
-                  <option value="12 TKJ 1">12 TKJ 1</option>
-                  <option value="10 TKJ 1">10 TKJ 1</option>
-                  <option value="11 TKJ 2">11 TKJ 2</option>
+                  {classOptions.map((option) =>
+                    option.kelasMateri.map((kelas) => (
+                      <option key={kelas} value={kelas}>
+                        {kelas}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
               <div className="flex items-center justify-between">
@@ -62,6 +80,7 @@ export default function DataSiswa() {
                 <span className="text-xl font-bold text-green-600">45</span>
               </div>
             </div>
+
             <div className="bg-yellow-100 rounded-lg shadow p-4 flex flex-col justify-between">
               <h2 className="text-sm font-medium text-gray-600 mb-2">
                 Pertemuan
@@ -72,9 +91,13 @@ export default function DataSiswa() {
                   value={selectedClass}
                   onChange={handleClassChange}
                 >
-                  <option value="12 TKJ 1">12 TKJ 1</option>
-                  <option value="10 TKJ 1">10 TKJ 1</option>
-                  <option value="11 TKJ 2">11 TKJ 2</option>
+                  {classOptions.map((option) =>
+                    option.kelasMateri.map((kelas) => (
+                      <option key={kelas} value={kelas}>
+                        {kelas}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
               <div className="flex items-center justify-between">
@@ -87,8 +110,14 @@ export default function DataSiswa() {
           </div>
 
           <div className="w-full flex flex-col gap-4">
-            <div className="w-full text-end">
-              <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-bold text-gray-800">
+                {selectedClassInfo || "Pilih kelas untuk melihat detail"}
+              </span>
+              <button
+                onClick={PushAbsen}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
                 Absen
               </button>
             </div>
