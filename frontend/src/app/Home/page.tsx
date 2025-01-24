@@ -36,19 +36,18 @@ export default function Home() {
             <div className="relative z-20 flex flex-col md:flex-row items-center justify-center md:justify-between h-full px-5 md:px-10 lg:mx-20">
               <div className="text-white md:w-1/2 mb-5 md:mb-0 text-center md:text-left">
                 <h4 className="text-xl md:text-2xl font-bold uppercase tracking-wider mb-3 md:mb-5">
-                  Campus SMKN 5 Kab Tangerang
+                  SMKN 5 Kab Tangerang
                 </h4>
 
-                <h1 className="text-3xl md:text-6xl font-extrabold mb-3 md:mb-5 leading-tight drop-shadow-lg">
+                <h1 className="text-3xl md:text-5xl font-extrabold mb-3 md:mb-5 leading-tight drop-shadow-lg">
                   Tiada Hari Tanpa Prestasi
                 </h1>
 
                 <p className="text-md md:text-xl font-medium text-gray-200 leading-relaxed mb-4 md:mb-6 drop-shadow">
-                  Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                  Temporibus enim adipisci hic, magnam perferendis aliquid earum
-                  exercitationem dolorum obcaecati quisquam quibusdam iste
-                  repudiandae assumenda libero sint deserunt quis consequuntur
-                  eligendi?
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia
+                  consequuntur eos non ullam possimus. Commodi enim ducimus
+                  minima est voluptates? Fuga quo dolorum, quia ullam explicabo
+                  provident accusamus eius dolorem.
                 </p>
               </div>
               <div className="h-auto flex justify-center">
@@ -84,11 +83,7 @@ export default function Home() {
                 </h1>
 
                 <p className="text-md md:text-xl font-medium text-gray-200 leading-relaxed mb-4 md:mb-6 drop-shadow">
-                  Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                  Temporibus enim adipisci hic, magnam perferendis aliquid earum
-                  exercitationem dolorum obcaecati quisquam quibusdam iste
-                  repudiandae assumenda libero sint deserunt quis consequuntur
-                  eligendi?
+                  school Of Technopreneur Nusantara
                 </p>
               </div>
               <div className="h-auto flex justify-center">

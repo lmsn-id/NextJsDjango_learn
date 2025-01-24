@@ -20,6 +20,16 @@ export default function ChatBoot() {
     setIsChatOpen(!isChatOpen);
   };
 
+  const formatResponse = (response: string): string => {
+    return response
+      .replace(/\*\*/g, "")
+      .replace(/\*/g, "")
+      .split(/\n\s*\n|\r\s*\r|\n|\r/)
+      .map((paragraph) => paragraph.trim())
+      .filter((paragraph) => paragraph.length > 0)
+      .join("\n\n");
+  };
+
   const handleSend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!userInput.trim()) return;
@@ -50,9 +60,11 @@ export default function ChatBoot() {
       });
 
       const data = await response.json();
+      const formattedContent = formatResponse(data.response);
+
       setMessages((prevMessages) => [
         ...prevMessages,
-        { sender: "bot", content: data.response },
+        { sender: "bot", content: formattedContent },
       ]);
     } catch (error) {
       console.error("Error sending message:", error);

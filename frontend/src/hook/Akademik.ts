@@ -2,6 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { getSession, useSession } from "next-auth/react";
 import { toast } from "react-toastify";
 
+interface SiswaData {
+  Nama: string;
+  Nis: string;
+  Kelas: string;
+  Jurusan: string;
+  Status: string;
+}
+
 interface AkademikData {
   Materi: Array<{ kelasMateri: string[]; value: string }>;
 }
@@ -58,9 +66,10 @@ export const useGetUserAkademik = () => {
 };
 
 export const GetDataSiswaAkademik = () => {
-  const [selectedClass, setSelectedClass] = useState<string>("12 TKJ 1");
+  const [selectedClass, setSelectedClass] = useState<string>("");
+  const [siswa, setSiswa] = useState<SiswaData[]>();
   const [classOptions, setClassOptions] = useState<
-    Array<{ kelasMateri: string[]; value: string }>
+    Array<{ value: string; kelasMateri: string[] }>
   >([]);
   const [selectedClassInfo, setSelectedClassInfo] = useState<string>("");
   const { data: session } = useSession();
@@ -76,6 +85,44 @@ export const GetDataSiswaAkademik = () => {
     );
     setSelectedClassInfo(classData?.value || "");
   };
+
+  const GetDataSiswaKelas = useCallback(async () => {
+    try {
+      if (!selectedClass) return null;
+
+      const session = await getSession();
+      if (!session || !session.accessToken) {
+        throw new Error(
+          "User is not authenticated or session is missing accessToken"
+        );
+      }
+
+      const formattedClass = encodeURIComponent(selectedClass);
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/GetSiswa/${formattedClass}`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        if (errorResponse?.error === "not_found") {
+          toast.info(errorResponse.message || "Data siswa tidak ditemukan");
+          return null;
+        }
+        throw new Error(errorResponse.message || "Failed to fetch data");
+      }
+      const result = await response.json();
+      setSiswa(result?.data || []);
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message || "Terjadi kesalahan");
+    }
+  }, [selectedClass]);
 
   const GetDataJurusanAkademik = useCallback(async () => {
     try {
@@ -111,14 +158,16 @@ export const GetDataSiswaAkademik = () => {
     const fetchData = async () => {
       try {
         const result = await GetDataJurusanAkademik();
-        setDataAkademik(result.data);
-
         const kelasMateri = result.data?.Materi || [];
         setClassOptions(kelasMateri);
-        if (kelasMateri.length > 0) {
-          setSelectedClass(kelasMateri[0].kelasMateri[0]);
+
+        if (!selectedClass && kelasMateri.length > 0) {
+          const defaultClass = kelasMateri[0].kelasMateri[0];
+          setSelectedClass(defaultClass);
           setSelectedClassInfo(kelasMateri[0].value);
         }
+
+        setDataAkademik(result.data);
       } catch (error) {
         toast.error("Error fetching data");
         console.error(error);
@@ -126,13 +175,21 @@ export const GetDataSiswaAkademik = () => {
     };
 
     fetchData();
-  }, [username, GetDataJurusanAkademik]);
+  }, [username, GetDataJurusanAkademik, selectedClass]);
+
+  useEffect(() => {
+    if (selectedClass) {
+      GetDataSiswaKelas();
+    }
+  }, [selectedClass, GetDataSiswaKelas]);
 
   return {
     DataAkademik,
     selectedClass,
     classOptions,
     selectedClassInfo,
+    setSelectedClass,
     handleClassChange,
+    siswa,
   };
 };

@@ -14,7 +14,7 @@ from pathlib import Path
 from datetime import timedelta
 
 
-GEMINI_API_KEY = ""
+GEMINI_API_KEY = "AIzaSyA1JZFMJMJJXMJV1hyNPqfPoOxLae0ZoLw"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

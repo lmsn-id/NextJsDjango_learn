@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
-from .models import DataSiswa, Akademik, ChatBot, CacheChatBot
+from urllib.parse import unquote
+from .models import DataSiswa, Akademik, ChatBot
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -346,6 +347,53 @@ class DeleteSiswaView(APIView):
             print("Error during delete:", e)
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class GetDataSiswaByKelasView(APIView):
+    def get(self, request, kelas):
+        try:
+            decoded_kelas = unquote(kelas)
+            kelas_parts = decoded_kelas.split(' ', 1)  
+
+            if len(kelas_parts) != 2:
+                return Response(
+                    {
+                        'error': 'invalid_format',
+                        'message': 'Format parameter kelas tidak valid. Harus dalam format.'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            kelas_value, jurusan_value = kelas_parts
+
+            siswa_queryset = DataSiswa.objects.filter(Kelas=kelas_value, Jurusan=jurusan_value)
+
+            if not siswa_queryset.exists():
+                return Response(
+                    {
+                        'error': 'not_found',
+                        'message': f'Data Kelas "{decoded_kelas}" tidak ada.'
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            serializer = DataSiswaSerializer(siswa_queryset, many=True)
+            return Response(
+                {
+                    'message': f'Data siswa untuk kelas: {decoded_kelas}',
+                    'data': serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            return Response(
+                {
+                    'error': 'server_error',
+                    'message': 'Terjadi kesalahan saat mengambil data siswa',
+                    'details': str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 #=================================================Siswa=================================================
 

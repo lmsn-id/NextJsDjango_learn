@@ -86,7 +86,7 @@ export default function Navbar() {
             className="flex items-center space-x-3 rtl:space-x-reverse"
           >
             <Image
-              src="/LOGO-NEW-SMKN5.png"
+              src="/icon.svg"
               height={100}
               width={100}
               alt="Logo"
